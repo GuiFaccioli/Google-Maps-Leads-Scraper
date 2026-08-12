@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root { font-family: 'Space Grotesk', sans-serif; color: #f5f5f0; background: #050505; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: #050505; }
+button, input { font: inherit; }
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; background: radial-gradient(circle at 75% 0%, #1c1c1c 0, #050505 35rem); }
+.topbar, footer { width: min(1120px, calc(100% - 48px)); margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+.topbar { padding: 28px 0; border-bottom: 1px solid #292929; }
+.brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font: 500 13px 'DM Mono', monospace; letter-spacing: .1em; }
+.brand-mark { display: grid; place-items: center; width: 28px; height: 28px; color: #050505; background: #d9ff43; font: 700 16px 'Space Grotesk'; }
+.api-status, .job-status { color: #8b8b86; font: 12px 'DM Mono', monospace; }
+.api-status { display: flex; align-items: center; gap: 8px; }
+.status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #6d6d68; }
+.online .status-dot, .state-badge.completed .status-dot { background: #d9ff43; box-shadow: 0 0 10px #d9ff43; }
+.content { flex: 1; width: min(1120px, calc(100% - 48px)); margin: 0 auto; padding: 90px 0 100px; }
+.hero { max-width: 700px; margin-bottom: 64px; }
+.eyebrow, .section-kicker { color: #d9ff43; font: 500 11px 'DM Mono', monospace; letter-spacing: .12em; }
+h1, h2, h3, p { margin: 0; }
+h1 { margin-top: 18px; font-size: clamp(42px, 7vw, 78px); line-height: .98; letter-spacing: -.06em; }
+h1 span { color: #777770; }
+.hero-copy { max-width: 470px; margin-top: 25px; color: #a2a29b; line-height: 1.6; }
+.panel, .results-section { border-top: 1px solid #353535; }
+.panel { padding: 30px 0 34px; }
+.panel-heading, .section-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+h2 { margin-top: 8px; font-size: 24px; letter-spacing: -.03em; }
+.panel-number, .result-count { color: #d9ff43; font: 28px 'DM Mono', monospace; }
+form label { display: block; margin-bottom: 10px; color: #a2a29b; font: 11px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .08em; }
+.form-row { display: grid; grid-template-columns: 1fr 110px auto; gap: 12px; align-items: end; }
+input { width: 100%; padding: 16px; border: 1px solid #3d3d3a; border-radius: 0; outline: none; color: #fff; background: #111; }
+input:focus { border-color: #d9ff43; box-shadow: 0 0 0 2px #d9ff4333; }
+.limit-field input { margin-top: 0; }
+.primary-button { display: flex; align-items: center; gap: 26px; padding: 16px 18px; border: 1px solid #d9ff43; color: #050505; background: #d9ff43; cursor: pointer; font-weight: 600; white-space: nowrap; }
+.primary-button:hover { background: #efffb1; }
+.primary-button:disabled { cursor: not-allowed; opacity: .45; }
+.error-message { margin-top: 18px; color: #ff8c8c; font-size: 14px; }
+.results-section { padding-top: 30px; }
+.job-status { display: flex; gap: 18px; align-items: center; margin: -8px 0 20px; }
+.state-badge { display: inline-flex; align-items: center; gap: 7px; color: #d9ff43; text-transform: uppercase; }
+.state-badge.failed { color: #ff8c8c; }
+.state-badge.failed .status-dot { background: #ff8c8c; }
+.empty-state { display: grid; place-items: center; min-height: 210px; border: 1px dashed #333; color: #777770; text-align: center; }
+.empty-icon { margin-bottom: 12px; color: #d9ff43; font-size: 30px; }
+.empty-state p { color: #c4c4bd; }
+.empty-state span:last-child { margin-top: 5px; font: 12px 'DM Mono', monospace; }
+.lead-list { display: grid; gap: 1px; background: #353535; }
+.lead-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px; background: #0d0d0d; }
+.lead-card h3 { font-size: 16px; }
+.lead-card p { margin-top: 6px; color: #85857e; font-size: 13px; }
+.lead-card a { color: #d9ff43; font: 12px 'DM Mono', monospace; white-space: nowrap; }
+footer { padding: 25px 0; border-top: 1px solid #292929; color: #595953; font: 10px 'DM Mono', monospace; letter-spacing: .08em; }
+@media (max-width: 700px) { .topbar, footer, .content { width: min(100% - 32px, 1120px); } .content { padding-top: 56px; } .form-row { grid-template-columns: 1fr 90px; } .primary-button { grid-column: 1 / -1; justify-content: space-between; } .job-status, footer { flex-direction: column; align-items: flex-start; } }

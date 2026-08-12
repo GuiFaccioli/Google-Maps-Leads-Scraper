@@ -1,0 +1,40 @@
+Metadata-Version: 2.4
+Name: google-maps-leads-scraper
+Version: 0.1.0
+Summary: Playwright-based Google Maps leads scraper with SQLite storage
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.115.0
+Requires-Dist: playwright>=1.46.0
+Requires-Dist: uvicorn[standard]>=0.30.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0.0; extra == "dev"
+
+# Google Maps Leads Scraper
+
+Python project scaffold for collecting restaurant leads from Google Maps with Playwright and storing them in SQLite.
+
+## Current scope
+
+- Project structure
+- Playwright setup
+- Local SQLite database initialization
+
+## Run the API
+
+```bash
+python -m pip install -e .
+uvicorn lead_scraper.api:app --reload
+```
+
+The API is available at `http://localhost:8000`. Health check: `http://localhost:8000/health`.
+
+## Setup
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e .
+playwright install
+python scripts/init_db.py
+```

@@ -1,0 +1,2 @@
+[console_scripts]
+maps-scraper-init-db = lead_scraper.cli:init_db_command
