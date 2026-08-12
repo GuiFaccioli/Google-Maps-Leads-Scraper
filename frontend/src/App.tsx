@@ -14,6 +14,7 @@ type Lead = {
   rating: number | null;
   review_count: number | null;
   price_range: string | null;
+  website: string | null;
 };
 
 type Job = {
@@ -111,6 +112,13 @@ function App() {
   }
 
   async function copyLeads() {
+    const text = leads.map((lead) => `${lead.name}\n${lead.address ?? "Endereço não informado"}\n${lead.phone ?? "Telefone não informado"} · Nota: ${lead.rating ?? "—"} · ${lead.review_count ?? 0} avaliações · ${lead.price_range ?? "Preço não informado"}\n${lead.website ?? "Website não informado"}`).join("\n\n");
+    await navigator.clipboard.writeText(text);
+    setCopyLabel("Lista copiada");
+    window.setTimeout(() => setCopyLabel("Copiar lista"), 1800);
+  }
+
+  /*
     const text = leads.map((lead) => [
       lead.name,
       lead.phone ?? "Telefone não informado",
@@ -118,12 +126,13 @@ function App() {
       `Nota: ${lead.rating ?? "—"}`,
       `${lead.review_count ?? 0} avaliações`,
       lead.price_range ?? "Preço não informado",
+      lead.website ?? "Website não informado",
       lead.source_url ?? "",
     ].join(" | ")).join("\n");
     await navigator.clipboard.writeText(text);
     setCopyLabel("Lista copiada");
     window.setTimeout(() => setCopyLabel("Copiar lista"), 1800);
-  }
+  */
 
   return (
     <div className="app-shell">
@@ -176,7 +185,7 @@ function App() {
             <div className="results-actions"><span className="result-count">{leads.length.toString().padStart(2, "0")}</span><button className="copy-button" type="button" onClick={() => void copyLeads()} disabled={leads.length === 0}>{copyLabel}</button></div>
           </div>
           {job && <div className="job-status"><span className={`state-badge ${job.state}`}><span className="status-dot" />{stateLabels[job.state]}</span><span>{job.query} · {job.leads_found} encontrados</span></div>}
-          {leads.length === 0 ? <div className="empty-state">{job?.state === "pending" || job?.state === "running" ? <><span className="loading-spinner" aria-hidden="true" /><p>Coletando leads...</p><span>O Google Maps está sendo consultado.</span></> : <><span className="empty-icon">◌</span><p>Nenhum lead coletado ainda.</p><span>Faça uma pesquisa para começar.</span></>}</div> : <div className="lead-list">{leads.map((lead) => <article className="lead-card" key={lead.id}><div><h3>{lead.name}</h3><p>{lead.address ?? "Endereço não informado"}</p><p>{lead.phone ?? "Telefone não informado"} · Nota: {lead.rating ?? "—"} · {lead.review_count ?? 0} avaliações · {lead.price_range ?? "Preço não informado"}</p></div>{lead.source_url && <a href={lead.source_url} target="_blank" rel="noreferrer">Ver no Maps ↗</a>}</article>)}</div>}
+          {leads.length === 0 ? <div className="empty-state">{job?.state === "pending" || job?.state === "running" ? <><span className="loading-spinner" aria-hidden="true" /><p>Coletando leads...</p><span>O Google Maps está sendo consultado.</span></> : <><span className="empty-icon">◌</span><p>Nenhum lead coletado ainda.</p><span>Faça uma pesquisa para começar.</span></>}</div> : <div className="lead-list">{leads.map((lead) => <article className="lead-card" key={lead.id}><div><h3>{lead.name}</h3><p>{lead.address ?? "Endereço não informado"}</p><p>{lead.phone ?? "Telefone não informado"} · Nota: {lead.rating ?? "—"} · {lead.review_count ?? 0} avaliações · {lead.price_range ?? "Preço não informado"}</p>{lead.website ? <a className="lead-website" href={lead.website} target="_blank" rel="noreferrer">Website ↗</a> : <p>Website não informado</p>}</div>{lead.source_url && <a href={lead.source_url} target="_blank" rel="noreferrer">Ver no Maps ↗</a>}</article>)}</div>}
         </section>
       </main>
       <footer><span>LOCAL TOOL / v0.1.0</span><span>Feito para prospecção inteligente.</span></footer>

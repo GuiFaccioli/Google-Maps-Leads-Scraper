@@ -50,6 +50,7 @@ input:focus { border-color: #d9ff43; box-shadow: 0 0 0 2px #d9ff4333; }
 .empty-state p { color: #c4c4bd; }
 .empty-state span:last-child { margin-top: 5px; font: 12px 'DM Mono', monospace; }
 .lead-list { display: grid; gap: 1px; background: #353535; }
+.lead-website { display: inline-block; margin-top: 8px; color: #d9ff43; font: 12px 'DM Mono', monospace; }
 .lead-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px; background: #0d0d0d; }
 .lead-card h3 { font-size: 16px; }
 .lead-card p { margin-top: 6px; color: #85857e; font-size: 13px; }

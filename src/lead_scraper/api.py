@@ -53,6 +53,7 @@ class LeadResponse(BaseModel):
     rating: float | None = None
     review_count: int | None = None
     price_range: str | None = None
+    website: str | None = None
     category: str | None = None
     source_query: str | None = None
     source_url: str | None = None
@@ -166,7 +167,7 @@ async def _run_scrape(job: ScrapeJob, limit: int, min_reviews: int | None, max_r
             await session.page.wait_for_timeout(500)
         print(f"SCRAPE LINKS {job.id}: {len(link_data)}", flush=True)
         logger.info("Scrape %s: %d resultados encontrados na lista", job.id, len(link_data))
-        leads: list[tuple[str, str, str | None, str | None, float | None, int | None, str | None]] = []
+        leads: list[tuple[str, str, str | None, str | None, float | None, int | None, str | None, str | None]] = []
         seen_urls: set[str] = set()
         for name, url in link_data:
             if url not in seen_urls:
@@ -177,19 +178,20 @@ async def _run_scrape(job: ScrapeJob, limit: int, min_reviews: int | None, max_r
                 phone = await _detail_value(session.page, ['button[data-item-id^="phone:"]', '[data-item-id^="phone:"]'])
                 rating, review_count = await _review_data(session.page)
                 price_range = await _price_range(session.page)
-                print(f"SCRAPE DATA {job.id}: {name} | {address=} {phone=} {rating=} {review_count=} {price_range=}", flush=True)
+                website = await _detail_value(session.page, ['a[data-item-id="authority"]', '[data-item-id="authority"]'])
+                print(f"SCRAPE DATA {job.id}: {name} | {address=} {phone=} {rating=} {review_count=} {price_range=} {website=}", flush=True)
                 logger.info("Scrape %s: %s | address=%r phone=%r rating=%r reviews=%r", job.id, name, address, phone, rating, review_count)
                 if (min_reviews is not None and (review_count is None or review_count < min_reviews)) or (max_reviews is not None and (review_count is None or review_count > max_reviews)):
                     continue
-                leads.append((name, url, address, phone, rating, review_count, price_range))
+                leads.append((name, url, address, phone, rating, review_count, price_range, website))
             if len(leads) >= limit:
                 break
 
         with open_connection(config.database_path) as connection:
-            for name, url, address, phone, rating, review_count, price_range in leads:
+            for name, url, address, phone, rating, review_count, price_range, website in leads:
                 connection.execute(
-                    "INSERT INTO leads (name, address, phone, rating, review_count, price_range, source_query, source_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(name, address, phone) DO UPDATE SET rating=excluded.rating, review_count=excluded.review_count, price_range=excluded.price_range, source_query=excluded.source_query, source_url=excluded.source_url, updated_at=datetime('now')",
-                    (name, address, phone, rating, review_count, price_range, job.query, url),
+                    "INSERT INTO leads (name, address, phone, rating, review_count, price_range, website, source_query, source_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(name, address, phone) DO UPDATE SET rating=excluded.rating, review_count=excluded.review_count, price_range=excluded.price_range, website=excluded.website, source_query=excluded.source_query, source_url=excluded.source_url, updated_at=datetime('now')",
+                    (name, address, phone, rating, review_count, price_range, website, job.query, url),
                 )
             connection.commit()
         print(f"SCRAPE SAVED {job.id}: {len(leads)} leads in {config.database_path}", flush=True)
