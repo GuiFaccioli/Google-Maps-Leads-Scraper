@@ -52,6 +52,7 @@ class LeadResponse(BaseModel):
     address: str | None = None
     rating: float | None = None
     review_count: int | None = None
+    price_range: str | None = None
     category: str | None = None
     source_query: str | None = None
     source_url: str | None = None
@@ -115,7 +116,7 @@ async def list_leads(limit: int = 100, source_query: str | None = None) -> list[
     with open_connection(config.database_path) as connection:
         if source_query:
             rows = connection.execute(
-                "SELECT * FROM leads WHERE source_query = ? ORDER BY created_at DESC LIMIT ?",
+                "SELECT * FROM leads WHERE LOWER(TRIM(source_query)) = LOWER(TRIM(?)) ORDER BY created_at DESC LIMIT ?",
                 (source_query, limit),
             ).fetchall()
         else:
@@ -165,7 +166,7 @@ async def _run_scrape(job: ScrapeJob, limit: int, min_reviews: int | None, max_r
             await session.page.wait_for_timeout(500)
         print(f"SCRAPE LINKS {job.id}: {len(link_data)}", flush=True)
         logger.info("Scrape %s: %d resultados encontrados na lista", job.id, len(link_data))
-        leads: list[tuple[str, str, str | None, str | None, float | None, int | None]] = []
+        leads: list[tuple[str, str, str | None, str | None, float | None, int | None, str | None]] = []
         seen_urls: set[str] = set()
         for name, url in link_data:
             if url not in seen_urls:
@@ -175,21 +176,23 @@ async def _run_scrape(job: ScrapeJob, limit: int, min_reviews: int | None, max_r
                 address = await _detail_value(session.page, ['button[data-item-id="address"]', '[data-item-id="address"]'])
                 phone = await _detail_value(session.page, ['button[data-item-id^="phone:"]', '[data-item-id^="phone:"]'])
                 rating, review_count = await _review_data(session.page)
-                print(f"SCRAPE DATA {job.id}: {name} | {address=} {phone=} {rating=} {review_count=}", flush=True)
+                price_range = await _price_range(session.page)
+                print(f"SCRAPE DATA {job.id}: {name} | {address=} {phone=} {rating=} {review_count=} {price_range=}", flush=True)
                 logger.info("Scrape %s: %s | address=%r phone=%r rating=%r reviews=%r", job.id, name, address, phone, rating, review_count)
                 if (min_reviews is not None and (review_count is None or review_count < min_reviews)) or (max_reviews is not None and (review_count is None or review_count > max_reviews)):
                     continue
-                leads.append((name, url, address, phone, rating, review_count))
+                leads.append((name, url, address, phone, rating, review_count, price_range))
             if len(leads) >= limit:
                 break
 
         with open_connection(config.database_path) as connection:
-            for name, url, address, phone, rating, review_count in leads:
+            for name, url, address, phone, rating, review_count, price_range in leads:
                 connection.execute(
-                    "INSERT INTO leads (name, address, phone, rating, review_count, source_query, source_url) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(name, address, phone) DO UPDATE SET rating=excluded.rating, review_count=excluded.review_count, source_query=excluded.source_query, source_url=excluded.source_url, updated_at=datetime('now')",
-                    (name, address, phone, rating, review_count, job.query, url),
+                    "INSERT INTO leads (name, address, phone, rating, review_count, price_range, source_query, source_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(name, address, phone) DO UPDATE SET rating=excluded.rating, review_count=excluded.review_count, price_range=excluded.price_range, source_query=excluded.source_query, source_url=excluded.source_url, updated_at=datetime('now')",
+                    (name, address, phone, rating, review_count, price_range, job.query, url),
                 )
             connection.commit()
+        print(f"SCRAPE SAVED {job.id}: {len(leads)} leads in {config.database_path}", flush=True)
         job.leads_found = len(leads)
         job.state = JobState.COMPLETED
     except Exception:
@@ -213,16 +216,41 @@ async def _detail_value(page: Any, selectors: list[str]) -> str | None:
 
 async def _review_data(page: Any) -> tuple[float | None, int | None]:
     import re
-    candidates = ["div.F7nice", '[aria-label*="avalia"]', '[aria-label*="review"]']
-    text = ""
+    candidates = [
+        'button[jsaction*="reviewChart"]',
+        '[aria-label*="avalia"]',
+        '[aria-label*="review"]',
+        'div.F7nice',
+    ]
+    values: list[str] = []
     for selector in candidates:
-        locator = page.locator(selector).first
-        if await locator.count():
-            text = (await locator.get_attribute("aria-label")) or (await locator.inner_text())
-            if text:
-                break
-    rating_match = re.search(r"(\d[,.]\d)", text)
-    count_match = re.search(r"(?:\(|\s)([\d.,]+)\)?\s*$", text)
+        for element in await page.locator(selector).all():
+            value = await element.get_attribute("aria-label") or await element.inner_text()
+            if value and value not in values:
+                values.append(value)
+    text = " ".join(values)
+    normalized_text = " ".join(text.replace("\xa0", " ").split())
+    rating_match = re.search(r"(\d[,.]\d)", normalized_text)
+    count_match = re.search(r"\(([\d.,]+)\)", normalized_text)
+    if count_match is None:
+        count_match = re.search(r"([\d.,]+)\s*(?:avaliações|avaliações do Google|reviews?)", normalized_text, re.IGNORECASE)
+    if count_match is None:
+        numbers = re.findall(r"\b\d[\d.,]*\b", normalized_text)
+        candidates = [value for value in numbers if not re.fullmatch(r"\d[,.]\d", value)]
+        if candidates:
+            count_match = re.search(f"({re.escape(candidates[-1])})", normalized_text)
     rating = float(rating_match.group(1).replace(",", ".")) if rating_match else None
-    review_count = int(count_match.group(1).replace(".", "").replace(",", "")) if count_match else None
+    review_count = None
+    if count_match:
+        raw_count = count_match.group(1).replace(".", "").replace(",", "")
+        if raw_count.isdigit():
+            review_count = int(raw_count)
+    print(f"SCRAPE REVIEWS: raw={normalized_text!r} parsed={review_count}", flush=True)
     return rating, review_count
+
+
+async def _price_range(page: Any) -> str | None:
+    import re
+    text = await page.locator("body").inner_text()
+    match = re.search(r"R\$\s*[\d.]+(?:,\d+)?\s*[-–—]\s*R\$?\s*[\d.]+(?:,\d+)?", text, re.IGNORECASE)
+    return " ".join(match.group(0).split()) if match else None

@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS leads (
     address TEXT,
     rating REAL,
     review_count INTEGER,
+    price_range TEXT,
     category TEXT,
     source_query TEXT,
     source_url TEXT,
@@ -37,6 +38,8 @@ def ensure_database(database_path: Path) -> None:
             connection.execute("ALTER TABLE leads ADD COLUMN rating REAL")
         if "review_count" not in columns:
             connection.execute("ALTER TABLE leads ADD COLUMN review_count INTEGER")
+        if "price_range" not in columns:
+            connection.execute("ALTER TABLE leads ADD COLUMN price_range TEXT")
 
 
 def open_connection(database_path: Path) -> sqlite3.Connection:
