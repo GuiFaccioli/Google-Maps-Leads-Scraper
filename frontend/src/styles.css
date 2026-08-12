@@ -30,16 +30,22 @@ form label { display: block; margin-bottom: 10px; color: #a2a29b; font: 11px 'DM
 input { width: 100%; padding: 16px; border: 1px solid #3d3d3a; border-radius: 0; outline: none; color: #fff; background: #111; }
 input:focus { border-color: #d9ff43; box-shadow: 0 0 0 2px #d9ff4333; }
 .limit-field input { margin-top: 0; }
-.primary-button { display: flex; align-items: center; gap: 26px; padding: 16px 18px; border: 1px solid #d9ff43; color: #050505; background: #d9ff43; cursor: pointer; font-weight: 600; white-space: nowrap; }
+.primary-button { display: flex; align-items: center; justify-content: center; gap: 12px; min-width: 190px; padding: 16px 18px; border: 1px solid #d9ff43; color: #050505; background: #d9ff43; cursor: pointer; font-weight: 600; white-space: nowrap; }
 .primary-button:hover { background: #efffb1; }
 .primary-button:disabled { cursor: not-allowed; opacity: .45; }
 .error-message { margin-top: 18px; color: #ff8c8c; font-size: 14px; }
 .results-section { padding-top: 30px; }
+.results-actions { display: flex; align-items: center; gap: 12px; }
+.copy-button { border: 1px solid #666; background: transparent; color: inherit; padding: 9px 13px; cursor: pointer; font: inherit; }
+.copy-button:hover:not(:disabled) { border-color: #fff; }
+.copy-button:disabled { cursor: not-allowed; opacity: .35; }
 .job-status { display: flex; gap: 18px; align-items: center; margin: -8px 0 20px; }
 .state-badge { display: inline-flex; align-items: center; gap: 7px; color: #d9ff43; text-transform: uppercase; }
 .state-badge.failed { color: #ff8c8c; }
 .state-badge.failed .status-dot { background: #ff8c8c; }
 .empty-state { display: grid; place-items: center; min-height: 210px; border: 1px dashed #333; color: #777770; text-align: center; }
+.loading-spinner { width: 28px; height: 28px; border: 2px solid #333; border-top-color: #d9ff43; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .empty-icon { margin-bottom: 12px; color: #d9ff43; font-size: 30px; }
 .empty-state p { color: #c4c4bd; }
 .empty-state span:last-child { margin-top: 5px; font: 12px 'DM Mono', monospace; }
@@ -49,4 +55,4 @@ input:focus { border-color: #d9ff43; box-shadow: 0 0 0 2px #d9ff4333; }
 .lead-card p { margin-top: 6px; color: #85857e; font-size: 13px; }
 .lead-card a { color: #d9ff43; font: 12px 'DM Mono', monospace; white-space: nowrap; }
 footer { padding: 25px 0; border-top: 1px solid #292929; color: #595953; font: 10px 'DM Mono', monospace; letter-spacing: .08em; }
-@media (max-width: 700px) { .topbar, footer, .content { width: min(100% - 32px, 1120px); } .content { padding-top: 56px; } .form-row { grid-template-columns: 1fr 90px; } .primary-button { grid-column: 1 / -1; justify-content: space-between; } .job-status, footer { flex-direction: column; align-items: flex-start; } }
+@media (max-width: 700px) { .topbar, footer, .content { width: min(100% - 32px, 1120px); } .content { padding-top: 56px; } .form-row { grid-template-columns: 1fr 90px; } .primary-button { grid-column: 1 / -1; justify-content: center; } .job-status, footer { flex-direction: column; align-items: flex-start; } }
